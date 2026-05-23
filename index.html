@@ -1,0 +1,246 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>無標題文件</title>
+</head>
+
+<body>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>台中旅遊：看風景 放輕鬆</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cream: #faf6f0;
+            --warm-brown: #8b5e3c;
+            --terracotta: #c97941;
+            --ink: #1e1a16;
+            --mist: #e8e0d5;
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html { scroll-behavior: smooth; height: 100%; }
+
+        body {
+            background-color: var(--cream);
+            color: var(--ink);
+            font-family: 'Noto Serif TC', serif;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
+        }
+
+        /* --- Hero Section 優化 --- */
+        .hero {
+            height: 45vh;
+            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.4)), 
+                        url('https://travel.taichung.gov.tw/image/24379/1024x768') center/cover no-repeat;
+            display: flex;
+            flex-direction: column; /* 改為垂直排列 */
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            position: relative;
+            padding-top: var(--safe-top);
+        }
+
+        /* 天氣小工具 - 改為頂部精簡橫條 */
+        .weather-container {
+            position: absolute;
+            top: 20px;
+            width: 90%;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 50px; /* 膠囊狀 */
+            padding: 5px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 10;
+        }
+
+        .hero-content {
+            margin-top: 40px; /* 騰出空間給天氣 */
+        }
+
+        .hero-title {
+            font-size: clamp(2.2rem, 8vw, 3.5rem);
+            font-weight: 900;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            margin-bottom: 5px;
+        }
+
+        .hero-link {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            transition: 0.3s;
+        }
+
+        /* Navigation */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(250, 246, 240, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: flex-start;
+            overflow-x: auto;
+            white-space: nowrap;
+            gap: 30px;
+            padding: 18px 25px;
+            border-bottom: 1px solid var(--mist);
+            scrollbar-width: none;
+        }
+        nav::-webkit-scrollbar { display: none; }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--warm-brown);
+            font-weight: 700;
+            font-size: 1.05rem;
+            position: relative;
+            transition: 0.3s;
+            flex-shrink: 0;
+        }
+
+        .nav-link.active { color: var(--terracotta); }
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px; left: 0; width: 100%; height: 3px;
+            background: var(--terracotta); border-radius: 2px;
+        }
+
+        main { flex: 1; padding: 40px 20px; max-width: 1000px; margin: 0 auto; width: 100%; }
+        .section { display: none; animation: fadeIn 0.6s ease forwards; }
+        .section.active { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        .item-card {
+            background: white; border-radius: 24px; overflow: hidden;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.06); display: flex; flex-direction: column;
+            border: 1px solid rgba(0,0,0,0.03); transition: transform 0.3s ease;
+        }
+        .item-card:hover { transform: translateY(-5px); }
+        .card-img { width: 100%; height: 240px; object-fit: cover; }
+        .card-body { padding: 25px; }
+        .card-body h3 { font-size: 1.5rem; margin-bottom: 8px; color: var(--warm-brown); font-weight: 900; }
+        
+        .location-link {
+            font-size: 0.9rem; color: var(--terracotta); margin-bottom: 12px;
+            display: flex; align-items: center; font-weight: 700; text-decoration: none;
+        }
+        .location-link::before { content: '📍'; margin-right: 5px; }
+        .card-body p { font-size: 1rem; color: #555; text-align: justify; line-height: 1.8; }
+
+        footer { text-align: center; padding: 50px 20px; font-size: 0.85rem; color: #aaa; background: #fff; border-top: 1px solid var(--mist); }
+
+        @media (max-width: 480px) {
+            .hero { height: 40vh; }
+            nav { justify-content: center; gap: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <section class="hero">
+        <div class="weather-container">
+            <a class="weatherwidget-io" href="https://forecast7.com/zh-tw/24d15120d67/taichung-city/" data-label_1="台中天氣" data-label_2="即時氣況" data-font="Noto Serif TC" data-icons="Climacons Animated" data-mode="Current" data-theme="pure" >台中今日天氣</a>
+            <script>
+            !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
+            </script>
+        </div>
+
+        <div class="hero-content">
+            <h1 class="hero-title">台中旅遊誌</h1>
+            <a href="https://www.taichung.gov.tw/" target="_blank" class="hero-link">Taichung City Government</a>
+        </div>
+    </section>
+
+    <nav id="navbar">
+        <a href="javascript:void(0)" class="nav-link active" onclick="switchTab('food', this)">在地美食</a>
+        <a href="javascript:void(0)" class="nav-link" onclick="switchTab('landmarks', this)">地標建築</a>
+        <a href="javascript:void(0)" class="nav-link" onclick="switchTab('culture', this)">文化藝文</a>
+        <a href="javascript:void(0)" class="nav-link" onclick="switchTab('nature', this)">自然休閒</a>
+    </nav>
+
+    <main>
+        <section id="food" class="section active">
+            <div class="item-card">
+                <img src="https://png.pngtree.com/png-clipart/20221116/ourmid/pngtree-taiwanese-suncake-png-image_6458228.png" class="card-img" alt="太陽餅">
+                <div class="card-body">
+                    <h3>太陽餅</h3>
+                    <a href="https://www.google.com/maps/search/%E5%8F%B0%E4%B8%AD%E5%A4%AA%E9%99%BD%E9%A4%85" target="_blank" class="location-link">台中市各區名產</a>
+                    <p>台中最優雅的伴手禮。純手工揉製的千層酥皮，層次分明，包裹著金黃色澤、甜而不膩的麥芽內餡。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="landmarks" class="section">
+            <div class="item-card">
+                <img src="https://travel.taichung.gov.tw/image/24379/1024x768" class="card-img" alt="歌劇院">
+                <div class="card-body">
+                    <h3>台中國家歌劇院</h3>
+                    <a href="https://goo.gl/maps/Z6Z7U8zQ5W9z" target="_blank" class="location-link">西屯區惠來路二段101號</a>
+                    <p>世界建築奇蹟。由伊東豊雄設計，獨特的無樑柱曲牆結構與美聲涵洞，是台中最知名的藝術地標。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="culture" class="section">
+            <div class="item-card">
+                <img src="https://travel.taichung.gov.tw/image/60812/1024x768" class="card-img" alt="刑務所演武場">
+                <div class="card-body">
+                    <h3>台中刑務所演武場</h3>
+                    <a href="https://goo.gl/maps/3J8XqZ7Y9zN2" target="_blank" class="location-link">西區林森路33號</a>
+                    <p>保存完整的日式武德殿建築。這裡推廣「六藝」文化，漫步在百年大樹與木造迴廊間。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="nature" class="section">
+            <div class="item-card">
+                <img src="https://taichung.travel/content/images/articles/55248/1024x768_articles-image-kp4wdqyakuuff1wnlfmwnw.jpg" class="card-img" alt="台中公園">
+                <div class="card-body">
+                    <h3>台中公園 (湖心亭)</h3>
+                    <a href="https://goo.gl/maps/5D9Z8X7Y9zN2" target="_blank" class="location-link">北區公園路37-1號</a>
+                    <p>台中市的象徵。建於日治時期的湖心亭，是城市中鬧中取靜的經典景點。</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2026 台中旅遊誌 · 看風景 放輕鬆</p>
+    </footer>
+
+    <script>
+        function switchTab(id, el) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            const target = document.getElementById(id);
+            if(target) target.classList.add('active');
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            el.classList.add('active');
+            const navPos = document.getElementById('navbar').offsetTop;
+            window.scrollTo({ top: navPos - 10, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
