@@ -1,246 +1,631 @@
-<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-<title>無標題文件</title>
-</head>
-
-<body>
-</body>
-</html>
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>台中旅遊：看風景 放輕鬆</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --cream: #faf6f0;
-            --warm-brown: #8b5e3c;
-            --terracotta: #c97941;
-            --ink: #1e1a16;
-            --mist: #e8e0d5;
-            --safe-top: env(safe-area-inset-top, 0px);
-            --safe-bottom: env(safe-area-inset-bottom, 0px);
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>台中城市漫步 — 用雙腳發現台中之美</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700;900&display=swap" rel="stylesheet" />
+  <style>
+    /* ===== CSS Variables ===== */
+    :root {
+      --color-bg: #faf8f5;
+      --color-surface: #ffffff;
+      --color-accent: #c8783a;
+      --color-accent-light: #e8a96a;
+      --color-text: #2c2416;
+      --color-muted: #7a6a56;
+      --color-border: #e2d8cc;
+      --color-tag-bg: #f3ece3;
+      --font-display: 'Noto Serif TC', Georgia, serif;
+      --font-body: 'Noto Sans TC', 'PingFang TC', sans-serif;
+      --radius: 4px;
+      --shadow: 0 2px 16px rgba(44,36,22,.09);
+      --shadow-lg: 0 8px 40px rgba(44,36,22,.15);
+      --max-width: 780px;
+      --ease: 0.3s ease;
+    }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        html { scroll-behavior: smooth; height: 100%; }
+    /* ===== Reset ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-family: var(--font-body);
+      font-size: 17px;
+      line-height: 1.85;
+      min-height: 100vh;
+    }
+    img { max-width: 100%; display: block; }
+    a { color: var(--color-accent); text-decoration: none; transition: color var(--ease); }
+    a:hover, a:focus { color: var(--color-accent-light); text-decoration: underline; }
 
-        body {
-            background-color: var(--cream);
-            color: var(--ink);
-            font-family: 'Noto Serif TC', serif;
-            line-height: 1.6;
-            display: flex;
-            flex-direction: column;
-            min-height: 100%;
-        }
+    /* ===== Page Switching via :target ===== */
+    /* All pages hidden by default */
+    .page { display: none; }
+    /* Show home by default when no hash */
+    #home { display: block; }
+    /* Show targeted page */
+    #home:target,
+    #article1:target,
+    #article2:target,
+    #article3:target { display: block; }
+    /* Hide home when another page is targeted */
+    #home:not(:target):has(~ :target) { display: none; }
 
-        /* --- Hero Section 優化 --- */
-        .hero {
-            height: 45vh;
-            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.4)), 
-                        url('https://travel.taichung.gov.tw/image/24379/1024x768') center/cover no-repeat;
-            display: flex;
-            flex-direction: column; /* 改為垂直排列 */
-            align-items: center;
-            justify-content: center;
-            color: white;
-            text-align: center;
-            position: relative;
-            padding-top: var(--safe-top);
-        }
+    /* Simpler approach: show all, hide with sibling trick */
+    /* We use a cleaner JS-free method: default show #home, hide others */
+    .page { display: none; }
+    #home { display: block; }
+    #article1:target,
+    #article2:target,
+    #article3:target { display: block; }
 
-        /* 天氣小工具 - 改為頂部精簡橫條 */
-        .weather-container {
-            position: absolute;
-            top: 20px;
-            width: 90%;
-            max-width: 400px;
-            background: rgba(255, 255, 255, 0.12);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border-radius: 50px; /* 膠囊狀 */
-            padding: 5px 15px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            z-index: 10;
-        }
+    /* Hide #home when any article is targeted */
+    body:has(#article1:target) #home,
+    body:has(#article2:target) #home,
+    body:has(#article3:target) #home { display: none; }
 
-        .hero-content {
-            margin-top: 40px; /* 騰出空間給天氣 */
-        }
+    /* ===== Reading Progress Bar ===== */
+    .progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      width: 0%; height: 4px;
+      background: linear-gradient(90deg, var(--color-accent), var(--color-accent-light));
+      z-index: 1000;
+      animation: reading-progress linear;
+      animation-timeline: scroll(root);
+      animation-range: 0% 100%;
+    }
+    /* Only show on article pages */
+    #home ~ .progress-bar,
+    body:not(:has(:target)) .progress-bar { display: none; }
+    #article1:target ~ .progress-bar,
+    #article2:target ~ .progress-bar,
+    #article3:target ~ .progress-bar { display: block; }
 
-        .hero-title {
-            font-size: clamp(2.2rem, 8vw, 3.5rem);
-            font-weight: 900;
-            text-shadow: 0 4px 15px rgba(0,0,0,0.4);
-            margin-bottom: 5px;
-        }
+    /* Hide bar on home */
+    body:not(:has(#article1:target)):not(:has(#article2:target)):not(:has(#article3:target)) .progress-bar { display: none; }
+    body:has(#article1:target) .progress-bar,
+    body:has(#article2:target) .progress-bar,
+    body:has(#article3:target) .progress-bar { display: block; }
 
-        .hero-link {
-            font-family: 'Playfair Display', serif;
-            font-style: italic;
-            font-size: 1rem;
-            color: rgba(255, 255, 255, 0.8);
-            text-decoration: none;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-            transition: 0.3s;
-        }
+    @keyframes reading-progress {
+      from { width: 0%; }
+      to   { width: 100%; }
+    }
 
-        /* Navigation */
-        nav {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(250, 246, 240, 0.95);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            display: flex;
-            justify-content: flex-start;
-            overflow-x: auto;
-            white-space: nowrap;
-            gap: 30px;
-            padding: 18px 25px;
-            border-bottom: 1px solid var(--mist);
-            scrollbar-width: none;
-        }
-        nav::-webkit-scrollbar { display: none; }
+    /* ===== Header ===== */
+    header {
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-border);
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 8px rgba(44,36,22,.06);
+    }
+    .header-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      gap: 1rem;
+    }
+    .site-logo {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--color-text);
+      letter-spacing: .04em;
+      white-space: nowrap;
+    }
+    .site-logo:hover { color: var(--color-accent); text-decoration: none; }
+    .site-logo span { color: var(--color-accent); }
 
-        .nav-link {
-            text-decoration: none;
-            color: var(--warm-brown);
-            font-weight: 700;
-            font-size: 1.05rem;
-            position: relative;
-            transition: 0.3s;
-            flex-shrink: 0;
-        }
+    nav { display: flex; gap: 1.5rem; align-items: center; }
+    nav a {
+      font-size: .92rem;
+      color: var(--color-muted);
+      font-weight: 500;
+      letter-spacing: .02em;
+    }
+    nav a:hover, nav a:focus { color: var(--color-accent); text-decoration: none; }
 
-        .nav-link.active { color: var(--terracotta); }
-        .nav-link.active::after {
-            content: '';
-            position: absolute;
-            bottom: -8px; left: 0; width: 100%; height: 3px;
-            background: var(--terracotta); border-radius: 2px;
-        }
+    /* Active nav state per page */
+    body:not(:has(:target)) nav a[href="#home"],
+    body:has(#home:target) nav a[href="#home"] { color: var(--color-accent); font-weight: 700; }
+    body:has(#article1:target) nav a[href="#article1"] { color: var(--color-accent); font-weight: 700; }
+    body:has(#article2:target) nav a[href="#article2"] { color: var(--color-accent); font-weight: 700; }
+    body:has(#article3:target) nav a[href="#article3"] { color: var(--color-accent); font-weight: 700; }
 
-        main { flex: 1; padding: 40px 20px; max-width: 1000px; margin: 0 auto; width: 100%; }
-        .section { display: none; animation: fadeIn 0.6s ease forwards; }
-        .section.active { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; }
+    /* ===== Hero ===== */
+    .hero {
+      background: linear-gradient(135deg, #3a2a1a 0%, #6b4226 60%, #c8783a 100%);
+      color: #fff;
+      padding: 5rem 1.5rem 4rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-content { position: relative; max-width: var(--max-width); margin: 0 auto; }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 900;
+      letter-spacing: .05em;
+      margin-bottom: 1rem;
+      text-shadow: 0 2px 12px rgba(0,0,0,.3);
+    }
+    .hero p { font-size: 1.1rem; opacity: .88; max-width: 520px; margin: 0 auto; line-height: 1.7; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    /* ===== Index Article List ===== */
+    .articles-section {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 3rem 1.5rem 4rem;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      color: var(--color-muted);
+      text-transform: uppercase;
+      letter-spacing: .15em;
+      margin-bottom: 2rem;
+      padding-bottom: .75rem;
+      border-bottom: 2px solid var(--color-border);
+    }
+    .article-list { display: flex; flex-direction: column; gap: 2rem; }
 
-        .item-card {
-            background: white; border-radius: 24px; overflow: hidden;
-            box-shadow: 0 12px 35px rgba(0,0,0,0.06); display: flex; flex-direction: column;
-            border: 1px solid rgba(0,0,0,0.03); transition: transform 0.3s ease;
-        }
-        .item-card:hover { transform: translateY(-5px); }
-        .card-img { width: 100%; height: 240px; object-fit: cover; }
-        .card-body { padding: 25px; }
-        .card-body h3 { font-size: 1.5rem; margin-bottom: 8px; color: var(--warm-brown); font-weight: 900; }
-        
-        .location-link {
-            font-size: 0.9rem; color: var(--terracotta); margin-bottom: 12px;
-            display: flex; align-items: center; font-weight: 700; text-decoration: none;
-        }
-        .location-link::before { content: '📍'; margin-right: 5px; }
-        .card-body p { font-size: 1rem; color: #555; text-align: justify; line-height: 1.8; }
+    .article-card {
+      background: var(--color-surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      transition: box-shadow var(--ease), transform var(--ease);
+      border: 1px solid var(--color-border);
+    }
+    .article-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
 
-        footer { text-align: center; padding: 50px 20px; font-size: 0.85rem; color: #aaa; background: #fff; border-top: 1px solid var(--mist); }
+    .card-placeholder {
+      min-height: 180px;
+      background: linear-gradient(135deg, var(--color-border) 0%, var(--color-tag-bg) 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem;
+    }
+    .article-card-body {
+      padding: 1.6rem 1.8rem;
+      display: flex; flex-direction: column;
+      justify-content: center; gap: .6rem;
+    }
 
-        @media (max-width: 480px) {
-            .hero { height: 40vh; }
-            nav { justify-content: center; gap: 20px; }
-        }
-    </style>
+    .article-tag {
+      display: inline-block;
+      background: var(--color-tag-bg);
+      color: var(--color-accent);
+      font-size: .78rem; font-weight: 700;
+      letter-spacing: .08em;
+      padding: .2em .7em;
+      border-radius: 2px;
+      border: 1px solid var(--color-accent-light);
+      width: fit-content;
+    }
+    .article-card-body h2 {
+      font-family: var(--font-display);
+      font-size: 1.2rem; font-weight: 700;
+      line-height: 1.45; color: var(--color-text);
+    }
+    .article-card-body h2 a { color: inherit; }
+    .article-card-body h2 a:hover { color: var(--color-accent); text-decoration: none; }
+
+    .article-meta {
+      font-size: .83rem; color: var(--color-muted);
+      display: flex; gap: 1rem; flex-wrap: wrap;
+    }
+    .article-excerpt { font-size: .95rem; color: var(--color-muted); line-height: 1.7; }
+    .read-more {
+      display: inline-flex; align-items: center; gap: .35em;
+      font-size: .88rem; font-weight: 600; color: var(--color-accent);
+      transition: gap var(--ease);
+    }
+    .read-more:hover { gap: .6em; text-decoration: none; }
+
+    /* ===== Article Page ===== */
+    .article-page {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 3rem 1.5rem 4rem;
+    }
+    .article-header { margin-bottom: 2.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--color-border); }
+    .article-header .article-tag { margin-bottom: 1rem; }
+    .article-header h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: 900; line-height: 1.35;
+      letter-spacing: .02em; margin-bottom: 1rem;
+    }
+
+    .cover-placeholder {
+      width: 100%; aspect-ratio: 16/7;
+      border-radius: var(--radius); margin-bottom: 2.5rem;
+      background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-light) 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 5rem; opacity: .7;
+    }
+
+    /* ===== Article Content ===== */
+    .article-content { font-size: 1.05rem; line-height: 1.9; }
+    .article-content h2 {
+      font-family: var(--font-display);
+      font-size: 1.3rem; font-weight: 700;
+      margin: 2.5rem 0 1rem;
+      padding-left: 1rem;
+      border-left: 3px solid var(--color-accent);
+    }
+    .article-content h3 {
+      font-family: var(--font-display);
+      font-size: 1.1rem; font-weight: 600;
+      margin: 2rem 0 .75rem;
+    }
+    .article-content p { margin-bottom: 1.4rem; }
+    .article-content blockquote {
+      background: var(--color-tag-bg);
+      border-left: 4px solid var(--color-accent);
+      padding: 1.2rem 1.5rem; margin: 2rem 0;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-style: italic; color: var(--color-muted);
+    }
+    .article-content ul, .article-content ol { padding-left: 1.5rem; margin-bottom: 1.4rem; }
+    .article-content li { margin-bottom: .4rem; }
+
+    /* ===== Post Navigation ===== */
+    .post-nav {
+      margin-top: 3.5rem; padding-top: 2rem;
+      border-top: 1px solid var(--color-border);
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+    }
+    .post-nav-btn {
+      display: flex; flex-direction: column; gap: .4rem;
+      padding: 1.2rem 1.4rem;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      transition: border-color var(--ease), box-shadow var(--ease), transform var(--ease);
+      color: var(--color-text);
+    }
+    .post-nav-btn:hover {
+      border-color: var(--color-accent);
+      box-shadow: 0 4px 16px rgba(200,120,58,.15);
+      transform: translateY(-2px);
+      text-decoration: none; color: var(--color-text);
+    }
+    .post-nav-btn.next { text-align: right; }
+    .post-nav-label { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--color-accent); }
+    .post-nav-title { font-family: var(--font-display); font-size: .97rem; font-weight: 600; line-height: 1.4; }
+    .post-nav-btn.disabled { opacity: .38; pointer-events: none; }
+
+    /* ===== Footer ===== */
+    footer {
+      background: var(--color-text);
+      color: rgba(255,255,255,.65);
+      text-align: center;
+      padding: 2.5rem 1.5rem;
+      font-size: .88rem;
+    }
+    footer a { color: var(--color-accent-light); }
+    footer strong { color: #fff; font-family: var(--font-display); }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 680px) {
+      .article-card { grid-template-columns: 1fr; }
+      .card-placeholder { min-height: 140px; }
+      .post-nav { grid-template-columns: 1fr; }
+      .post-nav-btn.next { text-align: left; }
+      nav { gap: 1rem; }
+    }
+    @media (max-width: 480px) {
+      .articles-section, .article-page { padding: 2rem 1rem 3rem; }
+      .hero { padding: 3.5rem 1rem 3rem; }
+    }
+  </style>
 </head>
 <body>
 
-    <section class="hero">
-        <div class="weather-container">
-            <a class="weatherwidget-io" href="https://forecast7.com/zh-tw/24d15120d67/taichung-city/" data-label_1="台中天氣" data-label_2="即時氣況" data-font="Noto Serif TC" data-icons="Climacons Animated" data-mode="Current" data-theme="pure" >台中今日天氣</a>
-            <script>
-            !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
-            </script>
-        </div>
+  <!-- 閱讀進度條 (文章頁顯示) -->
+  <div class="progress-bar" role="progressbar" aria-label="閱讀進度"></div>
 
-        <div class="hero-content">
-            <h1 class="hero-title">台中旅遊誌</h1>
-            <a href="https://www.taichung.gov.tw/" target="_blank" class="hero-link">Taichung City Government</a>
-        </div>
+  <!-- ===== Header ===== -->
+  <header>
+    <div class="header-inner">
+      <a href="#home" class="site-logo">台中<span>城市漫步</span></a>
+      <nav>
+        <a href="#home">首頁</a>
+        <a href="#article1">散策</a>
+        <a href="#article2">咖啡</a>
+        <a href="#article3">老屋</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ======================================================
+       PAGE: HOME
+  ====================================================== -->
+  <div id="home" class="page">
+    <section class="hero">
+      <div class="hero-content">
+        <h1>用雙腳丈量台中</h1>
+        <p>放慢腳步，走進巷弄、坐進老咖啡館、摸索老建築的歲月痕跡。這裡記錄每一次台中城市漫步的溫度與故事。</p>
+      </div>
     </section>
 
-    <nav id="navbar">
-        <a href="javascript:void(0)" class="nav-link active" onclick="switchTab('food', this)">在地美食</a>
-        <a href="javascript:void(0)" class="nav-link" onclick="switchTab('landmarks', this)">地標建築</a>
-        <a href="javascript:void(0)" class="nav-link" onclick="switchTab('culture', this)">文化藝文</a>
-        <a href="javascript:void(0)" class="nav-link" onclick="switchTab('nature', this)">自然休閒</a>
-    </nav>
-
     <main>
-        <section id="food" class="section active">
-            <div class="item-card">
-                <img src="https://png.pngtree.com/png-clipart/20221116/ourmid/pngtree-taiwanese-suncake-png-image_6458228.png" class="card-img" alt="太陽餅">
-                <div class="card-body">
-                    <h3>太陽餅</h3>
-                    <a href="https://www.google.com/maps/search/%E5%8F%B0%E4%B8%AD%E5%A4%AA%E9%99%BD%E9%A4%85" target="_blank" class="location-link">台中市各區名產</a>
-                    <p>台中最優雅的伴手禮。純手工揉製的千層酥皮，層次分明，包裹著金黃色澤、甜而不膩的麥芽內餡。</p>
-                </div>
-            </div>
-        </section>
+      <section class="articles-section">
+        <h2 class="section-title">最新文章</h2>
+        <div class="article-list">
 
-        <section id="landmarks" class="section">
-            <div class="item-card">
-                <img src="https://travel.taichung.gov.tw/image/24379/1024x768" class="card-img" alt="歌劇院">
-                <div class="card-body">
-                    <h3>台中國家歌劇院</h3>
-                    <a href="https://goo.gl/maps/Z6Z7U8zQ5W9z" target="_blank" class="location-link">西屯區惠來路二段101號</a>
-                    <p>世界建築奇蹟。由伊東豊雄設計，獨特的無樑柱曲牆結構與美聲涵洞，是台中最知名的藝術地標。</p>
-                </div>
+          <article class="article-card">
+            <div class="card-placeholder" role="img" aria-label="審計新村">🌿</div>
+            <div class="article-card-body">
+              <span class="article-tag">散策日記</span>
+              <h2><a href="#article1">審計新村散策：文青聚落裡的時光慢旅</a></h2>
+              <div class="article-meta">
+                <time datetime="2025-04-10">2025 年 4 月 10 日</time>
+                <span>閱讀約 8 分鐘</span>
+              </div>
+              <p class="article-excerpt">從勤美誠品旁的小巷鑽進去，審計新村像一塊安靜的綠洲，保留了日治時代宿舍群的骨架，卻填入了咖啡香、選物店與手作工坊……</p>
+              <a href="#article1" class="read-more">閱讀全文 →</a>
             </div>
-        </section>
+          </article>
 
-        <section id="culture" class="section">
-            <div class="item-card">
-                <img src="https://travel.taichung.gov.tw/image/60812/1024x768" class="card-img" alt="刑務所演武場">
-                <div class="card-body">
-                    <h3>台中刑務所演武場</h3>
-                    <a href="https://goo.gl/maps/3J8XqZ7Y9zN2" target="_blank" class="location-link">西區林森路33號</a>
-                    <p>保存完整的日式武德殿建築。這裡推廣「六藝」文化，漫步在百年大樹與木造迴廊間。</p>
-                </div>
+          <article class="article-card">
+            <div class="card-placeholder" role="img" aria-label="草悟道咖啡">☕</div>
+            <div class="article-card-body">
+              <span class="article-tag">咖啡地圖</span>
+              <h2><a href="#article2">草悟道咖啡地圖：五間藏在樹蔭下的獨立咖啡館</a></h2>
+              <div class="article-meta">
+                <time datetime="2025-03-22">2025 年 3 月 22 日</time>
+                <span>閱讀約 10 分鐘</span>
+              </div>
+              <p class="article-excerpt">草悟道沿線不只有勤美術館，兩側的小巷裡藏著好幾家各具風格的獨立咖啡店……</p>
+              <a href="#article2" class="read-more">閱讀全文 →</a>
             </div>
-        </section>
+          </article>
 
-        <section id="nature" class="section">
-            <div class="item-card">
-                <img src="https://taichung.travel/content/images/articles/55248/1024x768_articles-image-kp4wdqyakuuff1wnlfmwnw.jpg" class="card-img" alt="台中公園">
-                <div class="card-body">
-                    <h3>台中公園 (湖心亭)</h3>
-                    <a href="https://goo.gl/maps/5D9Z8X7Y9zN2" target="_blank" class="location-link">北區公園路37-1號</a>
-                    <p>台中市的象徵。建於日治時期的湖心亭，是城市中鬧中取靜的經典景點。</p>
-                </div>
+          <article class="article-card">
+            <div class="card-placeholder" role="img" aria-label="台中舊城區">🏯</div>
+            <div class="article-card-body">
+              <span class="article-tag">老屋探訪</span>
+              <h2><a href="#article3">舊城區老屋探訪：走讀台中中區的建築記憶</a></h2>
+              <div class="article-meta">
+                <time datetime="2025-03-05">2025 年 3 月 5 日</time>
+                <span>閱讀約 9 分鐘</span>
+              </div>
+              <p class="article-excerpt">台中中區曾是全市最繁華的商業核心，那些留存的老銀行、戲院與武德殿，承載著幾代人的生活記憶……</p>
+              <a href="#article3" class="read-more">閱讀全文 →</a>
             </div>
-        </section>
+          </article>
+
+        </div>
+      </section>
     </main>
 
     <footer>
-        <p>© 2026 台中旅遊誌 · 看風景 放輕鬆</p>
+      <p><strong>台中城市漫步</strong> &copy; 2025 &nbsp;·&nbsp; 網頁設計課程期末作業</p>
+      <p style="margin-top:.4rem">圖片來源：Unsplash（CC0 授權）</p>
     </footer>
+  </div><!-- /#home -->
 
-    <script>
-        function switchTab(id, el) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            const target = document.getElementById(id);
-            if(target) target.classList.add('active');
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            el.classList.add('active');
-            const navPos = document.getElementById('navbar').offsetTop;
-            window.scrollTo({ top: navPos - 10, behavior: 'smooth' });
-        }
-    </script>
+
+  <!-- ======================================================
+       PAGE: ARTICLE 1
+  ====================================================== -->
+  <div id="article1" class="page">
+    <main>
+      <article class="article-page">
+        <header class="article-header">
+          <span class="article-tag">散策日記</span>
+          <h1>審計新村散策：文青聚落裡的時光慢旅</h1>
+          <div class="article-meta">
+            <time datetime="2025-04-10">2025 年 4 月 10 日</time>
+            <span>閱讀約 8 分鐘</span>
+            <span>撰文：漫步編輯部</span>
+          </div>
+        </header>
+
+        <div class="cover-placeholder" role="img" aria-label="審計新村綠意盎然的街景">🌿</div>
+
+        <div class="article-content">
+          <p>從勤美誠品旁的小巷鑽進去，審計新村像一塊安靜的綠洲，保留了日治時代宿舍群的骨架，卻填入了咖啡香、選物店與手作工坊。這裡的步調，比城市其他地方都慢了半拍。</p>
+
+          <h2>日式宿舍群的前世今生</h2>
+          <p>審計新村的前身，是台灣省政府審計處的員工宿舍，建於日治末期，由一排排低矮的木造平房組成。隨著公務員宿舍功能消退，這片聚落一度空置，雜草從磚縫間冒出，像是被城市遺忘的角落。</p>
+          <p>直到 2015 年，台中市政府以「城市針灸」概念導入青年創業進駐計畫，老宿舍搖身一變成為全台最知名的文創聚落之一。如今每到假日，巷弄間擠滿了尋找文青感的旅人。</p>
+
+          <blockquote>「在這裡，每一扇老木門後面都有一個正在發生的故事。」</blockquote>
+
+          <h2>漫步路線建議</h2>
+          <p>建議從民生路側的入口進入，沿著中間主巷慢慢走，兩側是各具風格的選品店：賣台灣設計師品牌的服飾店、主打手沖單品的精品咖啡館、只賣台灣本土植栽的苔蘚工坊……</p>
+
+          <h3>不能錯過的三個角落</h3>
+          <ul>
+            <li><strong>巷尾的大樹廣場</strong>：幾棵老榕樹撐開巨大的傘蓋，樹下擺著幾張舊木椅，是整個聚落最有生活感的角落。</li>
+            <li><strong>週末手作市集</strong>：每逢周末，聚落廣場聚集幾十攤手作創作者，從皮革小物到手染布料，都是獨一無二的台中限定。</li>
+            <li><strong>深夜限定書店</strong>：以「給失眠者的選書」為主題，昏黃燈光下的閱讀體驗格外特別。</li>
+          </ul>
+
+          <h2>實用資訊</h2>
+          <p>審計新村位於台中市西區民生路 368 巷，步行距離勤美誠品約五分鐘。大多數店家的營業時間為每日上午十一點至晚上九點，周一部分店鋪休息。停車空間有限，建議搭乘大眾交通工具或騎 YouBike 前往。</p>
+          <p>漫步時記得放慢腳步，讓自己在某間咖啡館裡坐久一點，感受這個聚落獨有的時光韻律。</p>
+        </div>
+
+        <nav class="post-nav" aria-label="文章導覽">
+          <a href="#home" class="post-nav-btn disabled" aria-disabled="true">
+            <span class="post-nav-label">← 上一篇</span>
+            <span class="post-nav-title">（已是第一篇）</span>
+          </a>
+          <a href="#article2" class="post-nav-btn next">
+            <span class="post-nav-label">下一篇 →</span>
+            <span class="post-nav-title">草悟道咖啡地圖：五間藏在樹蔭下的獨立咖啡館</span>
+          </a>
+        </nav>
+      </article>
+    </main>
+
+    <footer>
+      <p><strong>台中城市漫步</strong> &copy; 2025 &nbsp;·&nbsp; 網頁設計課程期末作業</p>
+      <p style="margin-top:.4rem">圖片來源：Unsplash（CC0 授權）</p>
+    </footer>
+  </div><!-- /#article1 -->
+
+
+  <!-- ======================================================
+       PAGE: ARTICLE 2
+  ====================================================== -->
+  <div id="article2" class="page">
+    <main>
+      <article class="article-page">
+        <header class="article-header">
+          <span class="article-tag">咖啡地圖</span>
+          <h1>草悟道咖啡地圖：五間藏在樹蔭下的獨立咖啡館</h1>
+          <div class="article-meta">
+            <time datetime="2025-03-22">2025 年 3 月 22 日</time>
+            <span>閱讀約 10 分鐘</span>
+            <span>撰文：漫步編輯部</span>
+          </div>
+        </header>
+
+        <div class="cover-placeholder" role="img" aria-label="草悟道綠蔭與咖啡館">☕</div>
+
+        <div class="article-content">
+          <p>草悟道是台中市近年最重要的都市林蔭大道計畫，從科博館一路延伸至勤美術館，兩側種滿了高大的喬木。但許多人不知道的是，樹蔭深處的巷弄裡，藏著一間間各具個性的獨立咖啡館。</p>
+
+          <h2>為什麼台中咖啡館這麼多？</h2>
+          <p>台中有「咖啡之都」的稱號，在台灣咖啡文化興起的早期就已奠定基礎。本地的大學密集、年輕人口多，加上租金相對親民，造就了獨立咖啡館百花齊放的生態。草悟道一帶更是其中精華地段。</p>
+
+          <blockquote>一杯好咖啡，需要好豆、好手藝，還有一個讓你願意慢下來的空間。</blockquote>
+
+          <h2>五間推薦咖啡館</h2>
+
+          <h3>1. 弄咖啡 Nong Café</h3>
+          <p>藏在西區的一條安靜巷弄，外觀是老舊磚牆配上鏽鐵門。主理人親自前往衣索比亞採購豆子，單品咖啡的花果香氣讓人印象深刻。室內只有八個座位，建議非假日前往。</p>
+
+          <h3>2. 沐咖啡 Mu Coffee</h3>
+          <p>工業風裝潢搭配大面落地窗，窗外正好對著一排翠綠的榕樹。冰滴咖啡需要事先預約，滴漏十二小時後的風味層次豐富，是許多台中咖啡愛好者的朝聖選擇。</p>
+
+          <h3>3. 時間咖啡 Time Coffee</h3>
+          <p>老闆是位前建築師，把一棟老公寓一樓改造成充滿幾何美感的空間。牆上掛著老地圖，書架上擺著泛黃的城市規劃書。咖啡以中美洲選豆為主，中焙帶出豆子本身的堅果甜感。</p>
+
+          <h3>4. 根 Roots Coffee</h3>
+          <p>以台灣本土農業為主題，使用阿里山、古坑等產區的台灣咖啡豆，佐以台灣茶、台灣可可製成的飲品。對想認識台灣風土滋味的旅客來說，這裡是最好的起點。</p>
+
+          <h3>5. 晚上咖啡 Evening Coffee</h3>
+          <p>從下午兩點開到深夜十二點，是夜貓子和需要安靜加班的工作者的秘密基地。燈光偏暗，音樂低調，老闆只賣純粹的咖啡本味。</p>
+
+          <h2>漫遊建議</h2>
+          <p>以草悟道為軸線，可以規劃一整個下午的咖啡館巡禮。建議每間停留四十五分鐘至一小時，細細感受每個空間的性格。傍晚時分，草悟道的樹影斜斜落在人行道上，是台中最迷人的光線時刻。</p>
+          <p>記得帶一本書，或者什麼都不帶，只是坐著，讓時間在咖啡的香氣裡慢慢流過。</p>
+        </div>
+
+        <nav class="post-nav" aria-label="文章導覽">
+          <a href="#article1" class="post-nav-btn">
+            <span class="post-nav-label">← 上一篇</span>
+            <span class="post-nav-title">審計新村散策：文青聚落裡的時光慢旅</span>
+          </a>
+          <a href="#article3" class="post-nav-btn next">
+            <span class="post-nav-label">下一篇 →</span>
+            <span class="post-nav-title">舊城區老屋探訪：走讀台中中區的建築記憶</span>
+          </a>
+        </nav>
+      </article>
+    </main>
+
+    <footer>
+      <p><strong>台中城市漫步</strong> &copy; 2025 &nbsp;·&nbsp; 網頁設計課程期末作業</p>
+      <p style="margin-top:.4rem">圖片來源：Unsplash（CC0 授權）</p>
+    </footer>
+  </div><!-- /#article2 -->
+
+
+  <!-- ======================================================
+       PAGE: ARTICLE 3
+  ====================================================== -->
+  <div id="article3" class="page">
+    <main>
+      <article class="article-page">
+        <header class="article-header">
+          <span class="article-tag">老屋探訪</span>
+          <h1>舊城區老屋探訪：走讀台中中區的建築記憶</h1>
+          <div class="article-meta">
+            <time datetime="2025-03-05">2025 年 3 月 5 日</time>
+            <span>閱讀約 9 分鐘</span>
+            <span>撰文：漫步編輯部</span>
+          </div>
+        </header>
+
+        <div class="cover-placeholder" role="img" aria-label="台中中區老建築外觀">🏯</div>
+
+        <div class="article-content">
+          <p>台中中區曾是全市最繁華的商業核心，那些留存的老銀行、戲院與武德殿，承載著幾代人的生活記憶，也正在新一波修復浪潮中緩緩復甦。這次我們帶你走一趟舊城區，用雙腳讀懂台中的百年建築史。</p>
+
+          <h2>為什麼要走訪舊城區？</h2>
+          <p>台中市的發展重心長期往外移，中區一度成為沒落的代名詞，商家出走、人口外移，百年老建築在風吹日晒中悄悄凋零。然而近年來，一批建築師、文史工作者和年輕創業者選擇回到中區，用修復取代拆除，讓老房子重新站起來。</p>
+
+          <blockquote>一棟老建築的拆除，是一段歷史的永久消失；而它的修復，是城市記憶的延續。</blockquote>
+
+          <h2>必訪老建築地圖</h2>
+
+          <h3>台中州廳（今台中市政府舊址）</h3>
+          <p>建於 1913 年，典型的「辰野式」風格，紅磚搭配白色水平帶飾，穩重而氣派。目前已開放部分空間供民眾參觀，二樓的木造地板踩上去還會發出悅耳的吱嘎聲。</p>
+
+          <h3>第四信用合作社</h3>
+          <p>1934 年落成的現代主義建築，正面有著優雅的弧形轉角和大片玻璃窗，是台中中區最精緻的商業建築遺跡之一。修復後一樓改為文化空間，不定期舉辦展覽。</p>
+
+          <h3>台中座（舊戲院）</h3>
+          <p>日治時代的劇場建築，戰後曾改映電影，是老台中人的共同記憶。如今外牆上的彩繪壁畫和鏽蝕招牌，成了中區最具衝擊力的視覺景觀。</p>
+
+          <h3>台中武德殿</h3>
+          <p>1936 年由台灣總督府建造的武術道場，和風與西洋混搭的建築風格極為獨特。修復後作為社區活動中心，周末偶有太極拳班在庭院中練習，古意盎然。</p>
+
+          <h2>老屋漫遊實用提示</h2>
+          <ul>
+            <li>建議搭乘台灣好行台中遊或公車前往，中區停車不易。</li>
+            <li>部分老建築僅開放外觀參觀，進入前請留意告示。</li>
+            <li>中區巷弄複雜，建議下載離線地圖或跟隨在地導覽團。</li>
+            <li>傍晚時分的光線最適合拍攝老建築，磚紅色在夕陽下格外迷人。</li>
+          </ul>
+
+          <h2>中區的未來</h2>
+          <p>台中市政府近年推動「中區再生計畫」，結合修繕補助、青年進駐與文化活動，試圖讓這片舊城區重新注入活力。走在中區的街道上，已經能感受到一種安靜而堅定的復甦氣息。</p>
+          <p>走進中區，你走進的不只是一片老街，而是整個台中城市成長的軌跡。帶著耐心與好奇心，讓建築說話。</p>
+        </div>
+
+        <nav class="post-nav" aria-label="文章導覽">
+          <a href="#article2" class="post-nav-btn">
+            <span class="post-nav-label">← 上一篇</span>
+            <span class="post-nav-title">草悟道咖啡地圖：五間藏在樹蔭下的獨立咖啡館</span>
+          </a>
+          <a href="#home" class="post-nav-btn next disabled" aria-disabled="true">
+            <span class="post-nav-label">下一篇 →</span>
+            <span class="post-nav-title">（已是最後一篇）</span>
+          </a>
+        </nav>
+      </article>
+    </main>
+
+    <footer>
+      <p><strong>台中城市漫步</strong> &copy; 2025 &nbsp;·&nbsp; 網頁設計課程期末作業</p>
+      <p style="margin-top:.4rem">圖片來源：Unsplash（CC0 授權）</p>
+    </footer>
+  </div><!-- /#article3 -->
+
 </body>
 </html>
